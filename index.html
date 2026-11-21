@@ -1,159 +1,870 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="ja">
 <head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>KANJI PICK - N4 MOCK TEST</title>
-<style>
-*{box-sizing:border-box}
-body{margin:0;padding:16px;background:#071426;color:#fff;font-family:Arial,sans-serif}
-.container{max-width:650px;margin:auto;background:#10243e;padding:20px;border-radius:18px;border:1px solid #00d9ff}
-h1{text-align:center;color:#00eaff}
-.subtitle{text-align:center;color:#b8d8ef}
-select,button{width:100%;padding:13px;margin:8px 0;border:0;border-radius:9px;font-size:16px}
-select{background:#eafaff;color:#10243e}
-button{background:#00c9ed;color:#001522;font-weight:bold;cursor:pointer}
-button:disabled{opacity:.4;cursor:not-allowed}
-.question{background:#193553;padding:18px;border-radius:12px;margin:18px 0}
-.kanji{font-size:55px;text-align:center;color:#00eaff;margin:12px}
-.option{display:block;background:#274664;padding:13px;margin:9px 0;border-radius:8px;cursor:pointer}
-.option input{margin-right:10px}
-.progress{height:9px;background:#34506b;border-radius:20px;overflow:hidden}
-#bar{height:100%;width:0;background:#00eaff}
-.small{text-align:center;color:#bdd5e8}
-#result{display:none;background:#193553;padding:18px;border-radius:12px;margin-top:15px}
-.correct{color:#52ff9b}
-.wrong{color:#ff8585}
-</style>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>JLPT N4 Kanji Reading Quiz</title>
+  <style>
+    :root {
+      --bg: #0f172a;
+      --card: #1e293b;
+      --card-hover: #334155;
+      --primary: #38bdf8;
+      --primary-dark: #0284c7;
+      --text: #f8fafc;
+      --muted: #94a3b8;
+      --success: #22c55e;
+      --danger: #ef4444;
+      --border: #334155;
+    }
+
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+      font-family: 'Segoe UI', 'Hiragino Kaku Gothic ProN', 'Yu Gothic', sans-serif;
+    }
+
+    body {
+      background-color: var(--bg);
+      color: var(--text);
+      min-height: 100vh;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      padding: 16px;
+    }
+
+    .container {
+      width: 100%;
+      max-width: 720px;
+      background: var(--card);
+      border: 1px solid var(--border);
+      border-radius: 16px;
+      padding: 24px;
+      box-shadow: 0 10px 25px rgba(0, 0, 0, 0.35);
+    }
+
+    header {
+      text-align: center;
+      margin-bottom: 20px;
+      border-bottom: 1px solid var(--border);
+      padding-bottom: 14px;
+    }
+
+    header h1 {
+      font-size: 1.5rem;
+      color: var(--primary);
+      letter-spacing: 0.5px;
+    }
+
+    header p {
+      font-size: 0.9rem;
+      color: var(--muted);
+      margin-top: 4px;
+    }
+
+    .setup-box {
+      display: flex;
+      flex-direction: column;
+      gap: 16px;
+    }
+
+    .control-group {
+      display: flex;
+      flex-direction: column;
+      gap: 8px;
+    }
+
+    label {
+      font-size: 0.95rem;
+      font-weight: 600;
+      color: var(--text);
+    }
+
+    select, button {
+      padding: 12px 16px;
+      border-radius: 10px;
+      border: 1px solid var(--border);
+      font-size: 1rem;
+      outline: none;
+    }
+
+    select {
+      background: var(--bg);
+      color: var(--text);
+      cursor: pointer;
+    }
+
+    .btn {
+      background: var(--primary);
+      color: #0f172a;
+      font-weight: 700;
+      border: none;
+      cursor: pointer;
+      transition: background 0.2s, transform 0.1s;
+    }
+
+    .btn:hover {
+      background: var(--primary-dark);
+      color: #fff;
+    }
+
+    .btn:active {
+      transform: scale(0.98);
+    }
+
+    .btn-secondary {
+      background: #334155;
+      color: var(--text);
+    }
+
+    .btn-secondary:hover {
+      background: #475569;
+    }
+
+    .btn-submit {
+      background: var(--success);
+      color: #052e16;
+    }
+
+    .btn-submit:hover {
+      background: #16a34a;
+      color: #fff;
+    }
+
+    .btn:disabled {
+      opacity: 0.45;
+      cursor: not-allowed;
+    }
+
+    /* Quiz Area */
+    .hidden {
+      display: none !important;
+    }
+
+    .progress-bar-wrap {
+      width: 100%;
+      height: 8px;
+      background: var(--bg);
+      border-radius: 999px;
+      overflow: hidden;
+      margin-bottom: 14px;
+    }
+
+    .progress-bar {
+      height: 100%;
+      background: var(--primary);
+      width: 0%;
+      transition: width 0.3s ease;
+    }
+
+    .status-row {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      font-size: 0.95rem;
+      color: var(--muted);
+      margin-bottom: 18px;
+    }
+
+    .kanji-box {
+      background: var(--bg);
+      border: 2px solid var(--border);
+      border-radius: 14px;
+      padding: 28px 16px;
+      text-align: center;
+      margin-bottom: 20px;
+    }
+
+    .kanji-char {
+      font-size: 4.5rem;
+      font-weight: 700;
+      line-height: 1.1;
+      color: #ffffff;
+    }
+
+    .kanji-prompt {
+      margin-top: 10px;
+      font-size: 0.9rem;
+      color: var(--primary);
+    }
+
+    .options-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 12px;
+      margin-bottom: 22px;
+    }
+
+    @media (max-width: 520px) {
+      .options-grid {
+        grid-template-columns: 1fr;
+      }
+      .kanji-char {
+        font-size: 3.8rem;
+      }
+    }
+
+    .option-btn {
+      background: var(--bg);
+      color: var(--text);
+      border: 2px solid var(--border);
+      border-radius: 12px;
+      padding: 14px 16px;
+      text-align: left;
+      font-size: 1.05rem;
+      cursor: pointer;
+      transition: all 0.15s ease;
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+
+    .option-btn:hover {
+      border-color: var(--primary);
+      background: var(--card-hover);
+    }
+
+    .option-btn.selected {
+      border-color: var(--primary);
+      background: rgba(56, 189, 248, 0.18);
+      font-weight: 600;
+    }
+
+    .option-prefix {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      width: 28px;
+      height: 28px;
+      border-radius: 50%;
+      background: var(--card);
+      color: var(--primary);
+      font-size: 0.85rem;
+      font-weight: 700;
+      flex-shrink: 0;
+    }
+
+    .nav-row {
+      display: flex;
+      justify-content: space-between;
+      gap: 10px;
+      flex-wrap: wrap;
+    }
+
+    .nav-row button {
+      flex: 1;
+      min-width: 110px;
+    }
+
+    /* Result Screen */
+    .result-summary {
+      text-align: center;
+      background: var(--bg);
+      border-radius: 14px;
+      padding: 20px;
+      margin-bottom: 20px;
+      border: 1px solid var(--border);
+    }
+
+    .score-big {
+      font-size: 2.6rem;
+      font-weight: 800;
+      color: var(--primary);
+    }
+
+    .score-stats {
+      display: flex;
+      justify-content: center;
+      gap: 20px;
+      margin-top: 10px;
+      font-size: 1rem;
+    }
+
+    .stat-correct { color: var(--success); font-weight: 700; }
+    .stat-wrong { color: var(--danger); font-weight: 700; }
+
+    .review-list {
+      display: flex;
+      flex-direction: column;
+      gap: 10px;
+      max-height: 420px;
+      overflow-y: auto;
+      padding-right: 4px;
+      margin-bottom: 20px;
+    }
+
+    .review-item {
+      background: var(--bg);
+      border-left: 5px solid var(--border);
+      border-radius: 10px;
+      padding: 12px 14px;
+      display: flex;
+      align-items: center;
+      gap: 14px;
+    }
+
+    .review-item.is-correct { border-left-color: var(--success); }
+    .review-item.is-wrong { border-left-color: var(--danger); }
+
+    .review-kanji {
+      font-size: 2.1rem;
+      font-weight: 700;
+      min-width: 52px;
+      text-align: center;
+    }
+
+    .review-details {
+      font-size: 0.92rem;
+      line-height: 1.5;
+    }
+
+    .badge-ok { color: var(--success); font-weight: 700; }
+    .badge-no { color: var(--danger); font-weight: 700; }
+  </style>
 </head>
 <body>
-<div class="container">
-<h1>KANJI PICK</h1>
-<p class="subtitle">N4 MOCK TEST</p>
+  <div class="container">
+    <header>
+      <h1>漢字 (Kanji) – N4 Reading Test</h1>
+      <p>音読み (Katakana) &amp; 訓読み (Hiragana) Practice</p>
+    </header>
 
-<select id="testSelect" onchange="startTest()">
-<option value="0">Mock Test 1</option>
-</select>
+    <!-- Setup Screen -->
+    <div id="setup-screen" class="setup-box">
+      <div class="control-group">
+        <label for="question-count">প্রশ্নের সংখ্যা নির্বাচন করুন (Total 225 N4 Kanji):</label>
+        <select id="question-count">
+          <option value="10">10 Questions</option>
+          <option value="20" selected>20 Questions</option>
+          <option value="30">30 Questions</option>
+          <option value="50">50 Questions</option>
+          <option value="100">100 Questions</option>
+          <option value="225">All 225 Kanji</option>
+        </select>
+      </div>
 
-<p class="small" id="counter">Question 1 / 20</p>
-<div class="progress"><div id="bar"></div></div>
+      <div class="control-group">
+        <label for="reading-mode">Reading মোড নির্বাচন করুন:</label>
+        <select id="reading-mode">
+          <option value="mixed" selected>Mixed (音読み &amp; 訓読み)</option>
+          <option value="on">Only 音読み (Katakana)</option>
+          <option value="kun">Only 訓読み (Hiragana)</option>
+        </select>
+      </div>
 
-<div id="quiz">
-<div class="question">
-<p>Choose the correct meaning:</p>
-<div class="kanji" id="kanji"></div>
-<div id="options"></div>
-</div>
-<button id="prev" onclick="move(-1)">Previous</button>
-<button id="next" onclick="move(1)">Next</button>
-<button id="submit" onclick="submitTest()">Submit Test</button>
-</div>
+      <button class="btn" id="start-btn">Start Test</button>
+    </div>
 
-<div id="result">
-<h2>Test Result</h2>
-<h1 id="score"></h1>
-<p id="details"></p>
-<div id="review"></div>
-<button onclick="startTest()">Try Again</button>
-</div>
-</div>
+    <!-- Quiz Screen -->
+    <div id="quiz-screen" class="hidden">
+      <div class="progress-bar-wrap">
+        <div class="progress-bar" id="progress-bar"></div>
+      </div>
 
+      <div class="status-row">
+        <span id="question-counter">Question 1 / 20</span>
+        <span id="answered-counter">Answered: 0 / 20</span>
+      </div>
+
+      <div class="kanji-box">
+        <div class="kanji-char" id="kanji-display">住</div>
+        <div class="kanji-prompt" id="reading-type-label">Reading নির্বাচন করুন</div>
+      </div>
+
+      <div class="options-grid" id="options-container"></div>
+
+      <div class="nav-row">
+        <button class="btn btn-secondary" id="prev-btn">Previous</button>
+        <button class="btn" id="next-btn">Next</button>
+        <button class="btn btn-submit" id="submit-btn">Submit Test</button>
+      </div>
+    </div>
+
+    <!-- Result Screen -->
+    <div id="result-screen" class="hidden">
+      <div class="result-summary">
+        <div class="score-big" id="percentage-display">0%</div>
+        <div id="score-text" style="margin-top: 6px; font-size: 1.1rem;">Score: 0 / 20</div>
+        <div class="score-stats">
+          <span class="stat-correct" id="correct-count">Correct: 0</span>
+          <span class="stat-wrong" id="wrong-count">Wrong: 0</span>
+        </div>
+      </div>
+
+      <div class="review-list" id="review-list"></div>
+
+      <button class="btn" id="restart-btn" style="width: 100%;">Restart Test</button>
+    </div>
+  </div>
 <script>
-const kanjiData = [
-{ k:"住", r:"じゅう", m:"বাস করা", o:["বাস করা","খাওয়া","পড়া","লেখা"] },
-{ k:"所", r:"しょ", m:"স্থান", o:["সময়","স্থান","মানুষ","বই"] },
-{ k:"京", r:"きょう", m:"রাজধানী", o:["নদী","রাজধানী","পাহাড়","স্কুল"] },
-{ k:"都", r:"と", m:"মহানগর", o:["গ্রাম","মহানগর","রাস্তা","বাড়ি"] },
-{ k:"府", r:"ふ", m:"প্রিফেকচার", o:["প্রিফেকচার","দেশ","শহর","দোকান"] },
-{ k:"県", r:"けん", m:"প্রিফেকচার", o:["স্কুল","প্রিফেকচার","বই","গাড়ি"] },
-{ k:"市", r:"し", m:"শহর", o:["শহর","গ্রাম","পরিবার","নদী"] },
-{ k:"区", r:"く", m:"এলাকা", o:["সমুদ্র","এলাকা","আকাশ","বন"] },
-{ k:"町", r:"まち", m:"শহর/পাড়া", o:["পাহাড়","শহর/পাড়া","দেশ","বৃষ্টি"] },
-{ k:"村", r:"むら", m:"গ্রাম", o:["গ্রাম","রাস্তা","দোকান","স্কুল"] },
-{ k:"明", r:"あかるい", m:"উজ্জ্বল", o:["অন্ধকার","উজ্জ্বল","ঠান্ডা","গরম"] },
-{ k:"暗", r:"くらい", m:"অন্ধকার", o:["উজ্জ্বল","দ্রুত","অন্ধকার","নরম"] },
-{ k:"遠", r:"とおい", m:"দূর", o:["কাছের","দূর","ছোট","বড়"] },
-{ k:"近", r:"ちかい", m:"কাছের", o:["দূর","কাছের","ভারী","হালকা"] },
-{ k:"強", r:"つよい", m:"শক্তিশালী", o:["দুর্বল","শক্তিশালী","ধীর","নরম"] },
-{ k:"弱", r:"よわい", m:"দুর্বল", o:["শক্তিশালী","দুর্বল","লম্বা","মোটা"] },
-{ k:"重", r:"おもい", m:"ভারী", o:["হালকা","ভারী","পাতলা","ছোট"] },
-{ k:"軽", r:"かるい", m:"হালকা", o:["ভারী","হালকা","দূর","কাছের"] },
-{ k:"太", r:"ふとい", m:"মোটা", o:["চিকন","মোটা","লম্বা","ছোট"] },
-{ k:"細", r:"ほそい", m:"সরু/চিকন", o:["মোটা","সরু/চিকন","ভারী","শক্তিশালী"] }
-];
+    // ছবির N4 তালিকার হুবহু ২২৫টি Kanji এবং তাদের প্রকৃত On-yomi (Katakana) ও Kun-yomi (Hiragana)
+    const KANJI_DATA = [
+      // Row 1
+      { k: "住", on: "ジュウ", kun: "す.む" },
+      { k: "所", on: "ショ", kun: "ところ" },
+      { k: "京", on: "キョウ・ケイ", kun: "" },
+      { k: "都", on: "ト・ツ", kun: "みやこ" },
+      { k: "府", on: "フ", kun: "" },
+      { k: "県", on: "ケン", kun: "" },
+      { k: "市", on: "シ", kun: "いち" },
+      { k: "区", on: "ク", kun: "" },
+      { k: "町", on: "チョウ", kun: "まち" },
+      { k: "村", on: "ソン", kun: "むら" },
+      // Row 2
+      { k: "明", on: "メイ・ミョウ", kun: "あか.るい" },
+      { k: "暗", on: "アン", kun: "くら.い" },
+      { k: "遠", on: "エン", kun: "とお.い" },
+      { k: "近", on: "キン", kun: "ちか.い" },
+      { k: "強", on: "キョウ・ゴウ", kun: "つよ.い" },
+      { k: "弱", on: "ジャク", kun: "よわ.い" },
+      { k: "重", on: "ジュウ・チョウ", kun: "おも.い・かさ.ねる" },
+      { k: "軽", on: "ケイ", kun: "かる.い" },
+      { k: "太", on: "タイ・タ", kun: "ふと.い" },
+      { k: "細", on: "サイ", kun: "ほそ.い・こま.かい" },
+      // Row 3
+      { k: "特", on: "トク", kun: "" },
+      { k: "別", on: "ベツ", kun: "わか.れる" },
+      { k: "有", on: "ユウ・ウ", kun: "あ.る" },
+      { k: "便", on: "ベン・ビン", kun: "たよ.り" },
+      { k: "利", on: "リ", kun: "き.く" },
+      { k: "不", on: "フ・ブ", kun: "" },
+      { k: "切", on: "セツ・サイ", kun: "き.る" },
+      { k: "元", on: "ゲン・ガン", kun: "もと" },
+      { k: "好", on: "コウ", kun: "す.く・この.む" },
+      { k: "急", on: "キュウ", kun: "いそ.ぐ" },
+      // Row 4
+      { k: "低", on: "テイ", kun: "ひく.い" },
+      { k: "広", on: "コウ", kun: "ひろ.い" },
+      { k: "短", on: "タン", kun: "みじか.い" },
+      { k: "良", on: "リョウ", kun: "よ.い" },
+      { k: "悪", on: "アク・オ", kun: "わる.い" },
+      { k: "正", on: "セイ・ショウ", kun: "ただ.しい" },
+      { k: "変", on: "ヘン", kun: "か.わる" },
+      { k: "赤", on: "セキ・シャク", kun: "あか・あか.い" },
+      { k: "青", on: "セイ・ショウ", kun: "あお・あお.い" },
+      { k: "黒", on: "コク", kun: "くろ・くろ.い" },
+      // Row 5
+      { k: "映", on: "エイ", kun: "うつ.る・うつ.す" },
+      { k: "画", on: "ガ・カク", kun: "" },
+      { k: "音", on: "オン・イン", kun: "おと・ね" },
+      { k: "楽", on: "ガク・ラク", kun: "たの.しい" },
+      { k: "歌", on: "カ", kun: "うた・うた.う" },
+      { k: "写", on: "シャ", kun: "うつ.す・うつ.る" },
+      { k: "真", on: "シン", kun: "ま" },
+      { k: "旅", on: "リョ", kun: "たび" },
+      { k: "世", on: "セイ・セ", kun: "よ" },
+      { k: "界", on: "カイ", kun: "" },
+      // Row 6
+      { k: "仕", on: "シ・ジ", kun: "つか.える" },
+      { k: "事", on: "ジ・ズ", kun: "こと" },
+      { k: "銀", on: "ギン", kun: "" },
+      { k: "員", on: "イン", kun: "" },
+      { k: "医", on: "イ", kun: "" },
+      { k: "働", on: "ドウ", kun: "はたら.く" },
+      { k: "者", on: "シャ", kun: "もの" },
+      { k: "屋", on: "オク", kun: "や" },
+      { k: "産", on: "サン", kun: "う.む・う.まれる" },
+      { k: "業", on: "ギョウ・ゴウ", kun: "わざ" },
+      // Row 7
+      { k: "林", on: "リン", kun: "はやし" },
+      { k: "森", on: "シン", kun: "もり" },
+      { k: "地", on: "チ・ジ", kun: "" },
+      { k: "池", on: "チ", kun: "いけ" },
+      { k: "海", on: "カイ", kun: "うみ" },
+      { k: "洋", on: "ヨウ", kun: "" },
+      { k: "雪", on: "セツ", kun: "ゆき" },
+      { k: "光", on: "コウ", kun: "ひか.る・ひかり" },
+      { k: "台", on: "ダイ・タイ", kun: "" },
+      { k: "風", on: "フウ・フ", kun: "かぜ" },
+      // Row 8
+      { k: "季", on: "キ", kun: "" },
+      { k: "節", on: "セツ・セチ", kun: "ふし" },
+      { k: "春", on: "シュン", kun: "はる" },
+      { k: "夏", on: "カ・ゲ", kun: "なつ" },
+      { k: "秋", on: "シュウ", kun: "あき" },
+      { k: "冬", on: "トウ", kun: "ふゆ" },
+      { k: "暑", on: "ショ", kun: "あつ.い" },
+      { k: "寒", on: "カン", kun: "さむ.い" },
+      { k: "暖", on: "ダン", kun: "あたた.かい" },
+      { k: "涼", on: "リョウ", kun: "すず.しい" },
+      // Row 9
+      { k: "頭", on: "トウ・ズ・ト", kun: "あたま・かしら" },
+      { k: "体", on: "タイ・テイ", kun: "からだ" },
+      { k: "顔", on: "ガン", kun: "かお" },
+      { k: "首", on: "シュ", kun: "くび" },
+      { k: "心", on: "シン", kun: "こころ" },
+      { k: "声", on: "セイ・ショウ", kun: "こえ" },
+      { k: "病", on: "ビョウ・ヘイ", kun: "や.む・やまい" },
+      { k: "薬", on: "ヤク", kun: "くすり" },
+      { k: "科", on: "カ", kun: "" },
+      { k: "内", on: "ナイ・ダイ", kun: "うち" },
+      // Row 10
+      { k: "曜", on: "ヨウ", kun: "" },
+      { k: "昼", on: "チュウ", kun: "ひる" },
+      { k: "夜", on: "ヤ", kun: "よ・よる" },
+      { k: "夕", on: "セキ", kun: "ゆう" },
+      { k: "方", on: "ホウ", kun: "かた" },
+      { k: "晩", on: "バン", kun: "" },
+      { k: "計", on: "ケイ", kun: "はか.る" },
+      { k: "朝", on: "チョウ", kun: "あさ" },
+      { k: "以", on: "イ", kun: "" },
+      { k: "度", on: "ド・ト・タク", kun: "たび" },
+      // Row 11
+      { k: "止", on: "シ", kun: "と.まる・と.める" },
+      { k: "歩", on: "ホ・ブ・フ", kun: "ある.く・あゆ.む" },
+      { k: "走", on: "ソウ", kun: "はし.る" },
+      { k: "起", on: "キ", kun: "お.きる・お.こす" },
+      { k: "持", on: "ジ", kun: "も.つ" },
+      { k: "待", on: "タイ", kun: "ま.つ" },
+      { k: "借", on: "シャク", kun: "か.りる" },
+      { k: "貸", on: "タイ", kun: "か.す" },
+      { k: "始", on: "シ", kun: "はじ.める・はじ.まる" },
+      { k: "終", on: "シュウ", kun: "お.わる・お.える" },
+      // Row 12
+      { k: "家", on: "カ・ケ", kun: "いえ・や" },
+      { k: "族", on: "ゾク", kun: "" },
+      { k: "私", on: "シ", kun: "わたくし・わたし" },
+      { k: "自", on: "ジ・シ", kun: "みずか.ら" },
+      { k: "親", on: "シン", kun: "おや・した.しい" },
+      { k: "両", on: "リョウ", kun: "" },
+      { k: "兄", on: "ケイ・キョウ", kun: "あに" },
+      { k: "弟", on: "テイ・ダイ・デ", kun: "おとうと" },
+      { k: "姉", on: "シ", kun: "あね" },
+      { k: "妹", on: "マイ", kun: "いもうと" },
+      // Row 13
+      { k: "活", on: "カツ", kun: "" },
+      { k: "回", on: "カイ・エ", kun: "まわ.る・まわ.す" },
+      { k: "主", on: "シュ・ス", kun: "ぬし・おも" },
+      { k: "色", on: "ショク・シキ", kun: "いろ" },
+      { k: "形", on: "ケイ・ギョウ", kun: "かた・かたち" },
+      { k: "犬", on: "ケン", kun: "いぬ" },
+      { k: "民", on: "ミン", kun: "たみ" },
+      { k: "服", on: "フク", kun: "" },
+      { k: "品", on: "ヒン", kun: "しな" },
+      { k: "同", on: "ドウ", kun: "おな.じ" },
+      // Row 14
+      { k: "米", on: "ベイ・マイ", kun: "こめ" },
+      { k: "料", on: "リョウ", kun: "" },
+      { k: "理", on: "リ", kun: "" },
+      { k: "肉", on: "ニク", kun: "" },
+      { k: "鳥", on: "チョウ", kun: "とり" },
+      { k: "菜", on: "サイ", kun: "な" },
+      { k: "野", on: "ヤ", kun: "の" },
+      { k: "茶", on: "チャ・サ", kun: "" },
+      { k: "飯", on: "ハン", kun: "めし" },
+      { k: "味", on: "ミ", kun: "あじ・あじ.わう" },
+      // Row 15
+      { k: "代", on: "ダイ・タイ", kun: "か.わる・よ・しろ" },
+      { k: "使", on: "シ", kun: "つか.う" },
+      { k: "作", on: "サク・サ", kun: "つく.る" },
+      { k: "化", on: "カ・ケ", kun: "ば.ける・ば.かす" },
+      { k: "信", on: "シン", kun: "" },
+      { k: "進", on: "シン", kun: "すす.む・すす.める" },
+      { k: "送", on: "ソウ", kun: "おく.る" },
+      { k: "返", on: "ヘン", kun: "かえ.す・かえ.る" },
+      { k: "洗", on: "セン", kun: "あら.う" },
+      { k: "注", on: "チュウ", kun: "そそ.ぐ" },
+      // Row 16
+      { k: "場", on: "ジョウ", kun: "ば" },
+      { k: "建", on: "ケン・コン", kun: "た.てる・た.つ" },
+      { k: "物", on: "ブツ・モツ", kun: "もの" },
+      { k: "院", on: "イン", kun: "" },
+      { k: "館", on: "カン", kun: "やかた" },
+      { k: "堂", on: "ドウ", kun: "" },
+      { k: "室", on: "シツ", kun: "むろ" },
+      { k: "工", on: "コウ・ク", kun: "" },
+      { k: "図", on: "ズ・ト", kun: "はか.る" },
+      { k: "号", on: "ゴウ", kun: "" },
+      // Row 17
+      { k: "交", on: "コウ", kun: "まじ.わる・か.う" },
+      { k: "通", on: "ツウ・ツ", kun: "とお.る・かよ.う" },
+      { k: "動", on: "ドウ", kun: "うご.く・うご.かす" },
+      { k: "乗", on: "ジョウ", kun: "の.る・の.せる" },
+      { k: "降", on: "コウ", kun: "お.りる・ふ.る" },
+      { k: "運", on: "ウン", kun: "はこ.ぶ" },
+      { k: "転", on: "テン", kun: "ころ.がる・ころ.ぶ" },
+      { k: "帰", on: "キ", kun: "かえ.る・かえ.す" },
+      { k: "発", on: "ハツ・ホツ", kun: "" },
+      { k: "着", on: "チャク・ジャク", kun: "き.る・つ.く" },
+      // Row 18
+      { k: "漢", on: "カン", kun: "" },
+      { k: "字", on: "ジ", kun: "あざ" },
+      { k: "文", on: "ブン・モン", kun: "ふみ" },
+      { k: "教", on: "キョウ", kun: "おし.える・おそ.わる" },
+      { k: "勉", on: "ベン", kun: "" },
+      { k: "研", on: "ケン", kun: "と.ぐ" },
+      { k: "英", on: "エイ", kun: "" },
+      { k: "考", on: "コウ", kun: "かんが.える" },
+      { k: "習", on: "シュウ", kun: "なら.う" },
+      { k: "究", on: "キュウ", kun: "きわ.める" },
+      // Row 19
+      { k: "問", on: "モン", kun: "と.う・と.い" },
+      { k: "題", on: "ダイ", kun: "" },
+      { k: "試", on: "シ", kun: "こころ.みる・ため.す" },
+      { k: "験", on: "ケン・ゲン", kun: "" },
+      { k: "質", on: "シツ・シチ・チ", kun: "" },
+      { k: "合", on: "ゴウ・ガッ・カッ", kun: "あ.う・あ.わせる" },
+      { k: "答", on: "トウ", kun: "こた.える・こた.え" },
+      { k: "用", on: "ヨウ", kun: "もち.いる" },
+      { k: "紙", on: "シ", kun: "かみ" },
+      { k: "意", on: "イ", kun: "" },
+      // Row 20
+      { k: "引", on: "イン", kun: "ひ.く・ひ.ける" },
+      { k: "開", on: "カイ", kun: "ひら.く・あ.く・あ.ける" },
+      { k: "閉", on: "ヘイ", kun: "と.じる・し.める・し.まる" },
+      { k: "去", on: "キョ・コ", kun: "さ.る" },
+      { k: "死", on: "シ", kun: "し.ぬ" },
+      { k: "集", on: "シュウ", kun: "あつ.まる・あつ.める" },
+      { k: "知", on: "チ", kun: "し.る" },
+      { k: "売", on: "バイ", kun: "う.る・う.れる" },
+      { k: "説", on: "セツ・ゼイ", kun: "と.く" },
+      { k: "思", on: "シ", kun: "おも.う" },
+      // Bottom Table (35 Kanji)
+      { k: "力", on: "リョク・リキ", kun: "ちから" },
+      { k: "全", on: "ゼン", kun: "まった.く・すべ.て" },
+      { k: "若", on: "ジャク・ニャク", kun: "わか.い・も.しくは" },
+      { k: "消", on: "ショウ", kun: "き.える・け.す" },
+      { k: "捨", on: "シャ", kun: "す.てる" },
+      { k: "座", on: "ザ", kun: "すわ.る" },
+      { k: "落", on: "ラク", kun: "お.ちる・お.とす" },
+      { k: "田", on: "デン", kun: "た" },
+      { k: "公", on: "コウ", kun: "おおやけ" },
+      { k: "伝", on: "デン", kun: "つた.わる・つた.える" },
+      { k: "忘", on: "ボウ", kun: "わす.れる" },
+      { k: "受", on: "ジュ", kun: "う.ける・う.かる" },
+      { k: "残", on: "ザン", kun: "のこ.る・のこ.す" },
+      { k: "寝", on: "シン", kun: "ね.る・ね.かす" },
+      { k: "早", on: "ソウ・サッ", kun: "はや.い" },
+      { k: "園", on: "エン", kun: "その" },
+      { k: "決", on: "ケツ", kun: "き.める・き.まる" },
+      { k: "呼", on: "コ", kun: "よ.ぶ" },
+      { k: "取", on: "シュ", kun: "と.る" },
+      { k: "調", on: "チョウ", kun: "しら.べる・ととの.う" },
+      { k: "遅", on: "チ", kun: "おく.れる・おそ.い" },
+      { k: "牛", on: "ギュウ", kun: "うし" },
+      { k: "部", on: "ブ", kun: "" },
+      { k: "困", on: "コン", kun: "こま.る" },
+      { k: "押", on: "オウ", kun: "お.す・お.さえる" },
+      { k: "席", on: "セキ", kun: "" },
+      { k: "続", on: "ゾク", kun: "つづ.く・つづ.ける" },
+      { k: "門", on: "モン", kun: "かど" },
+      { k: "鉄", on: "テツ", kun: "" },
+      { k: "祖", on: "ソ", kun: "" },
+      { k: "泳", on: "エイ", kun: "およ.ぐ" },
+      { k: "拾", on: "シュウ・ジュウ", kun: "ひろ.う" },
+      { k: "連", on: "レン", kun: "つら.なる・つ.れる" },
+      { k: "練", on: "レン", kun: "ね.る" },
+      { k: "線", on: "セン", kun: "" }
+    ];
+ let quizQuestions = [];
+    let currentIndex = 0;
+    let userAnswers = [];
 
-let current=0;
-let answers={};
-let submitted=false;
+    const setupScreen = document.getElementById("setup-screen");
+    const quizScreen = document.getElementById("quiz-screen");
+    const resultScreen = document.getElementById("result-screen");
 
-function startTest(){
- current=0;
- answers={};
- submitted=false;
- document.getElementById("quiz").style.display="block";
- document.getElementById("result").style.display="none";
- render();
-}
+    const questionCountSelect = document.getElementById("question-count");
+    const readingModeSelect = document.getElementById("reading-mode");
+    const startBtn = document.getElementById("start-btn");
 
-function render(){
- const q=kanjiData[current];
- document.getElementById("kanji").textContent=q.k;
- document.getElementById("counter").textContent=
- "Question "+(current+1)+" / "+kanjiData.length;
- document.getElementById("bar").style.width=
- ((current+1)/kanjiData.length*100)+"%";
+    const progressBar = document.getElementById("progress-bar");
+    const questionCounter = document.getElementById("question-counter");
+    const answeredCounter = document.getElementById("answered-counter");
+    const kanjiDisplay = document.getElementById("kanji-display");
+    const readingTypeLabel = document.getElementById("reading-type-label");
+    const optionsContainer = document.getElementById("options-container");
 
- document.getElementById("options").innerHTML="";
- q.o.forEach((option,i)=>{
-  const label=document.createElement("label");
-  label.className="option";
-  label.innerHTML=`<input type="radio" name="answer" value="${i}" ${answers[current]===i?"checked":""}> ${i+1}. ${option}`;
-  label.querySelector("input").addEventListener("change",()=>{
-   answers[current]=i;
-   updateSubmit();
-  });
-  document.getElementById("options").appendChild(label);
- });
+    const prevBtn = document.getElementById("prev-btn");
+    const nextBtn = document.getElementById("next-btn");
+    const submitBtn = document.getElementById("submit-btn");
+    const restartBtn = document.getElementById("restart-btn");
 
- document.getElementById("prev").disabled=current===0;
- document.getElementById("next").disabled=current===kanjiData.length-1;
- updateSubmit();
-}
+    function shuffle(array) {
+      const arr = [...array];
+      for (let i = arr.length - 1; i > 0; i--) {
+        const j = Math.floor(Math.random() * (i + 1));
+        [arr[i], arr[j]] = [arr[j], arr[i]];
+      }
+      return arr;
+    }
 
-function updateSubmit(){
- document.getElementById("submit").disabled=
- Object.keys(answers).length!==kanjiData.length;
-}
+    function buildQuestions(count, mode) {
+      let pool = [];
 
-function move(direction){
- current+=direction;
- render();
-}
+      if (mode === "on") {
+        pool = KANJI_DATA.filter(item => item.on && item.on.trim() !== "");
+      } else if (mode === "kun") {
+        pool = KANJI_DATA.filter(item => item.kun && item.kun.trim() !== "");
+      } else {
+        pool = [...KANJI_DATA];
+      }
 
-function submitTest(){
- if(Object.keys(answers).length!==kanjiData.length)return;
- submitted=true;
- let score=0;
- let review="";
- kanjiData.forEach((q,i)=>{
-  const correct=q.o.indexOf(q.m);
-  const right=answers[i]===correct;
-  if(right)score++;
-  review+=`<p class="${right?"correct":"wrong"}">
-  ${i+1}. ${q.k} — ${right?"Correct":"Incorrect"}<br>
-  Your answer: ${q.o[answers[i]]}<br>
-  Correct answer: ${q.m}
-  </p>`;
- });
- const percent=Math.round(score/kanjiData.length*100);
- document.getElementById("quiz").style.display="none";
- document.getElementById("result").style.display="block";
- document.getElementById("score").textContent=score+" / "+kanjiData.length;
- document.getElementById("details").textContent="Your score: "+percent+"%";
- document.getElementById("review").innerHTML=review;
-}
+      const selectedItems = shuffle(pool).slice(0, Math.min(count, pool.length));
 
-startTest();
-</script>
+      return selectedItems.map(item => {
+        let targetType = mode;
+        if (mode === "mixed") {
+          if (item.on && item.kun) {
+            targetType = Math.random() < 0.5 ? "on" : "kun";
+          } else if (item.on) {
+            targetType = "on";
+          } else {
+            targetType = "kun";
+          }
+        }
+
+        const correctReading = targetType === "on" ? item.on : item.kun;
+        const typeText = targetType === "on" ? "音読み (Katakana)" : "訓読み (Hiragana)";
+
+        // একই ধরনের Reading থেকে ৩টি ভুল অপশন তৈরি করা (Katakana না থাকলে জোর করে বানানো হবে না)
+        const distractorPool = KANJI_DATA
+          .filter(other => other.k !== item.k && other[targetType] && other[targetType] !== correctReading)
+          .map(other => other[targetType]);
+
+        const uniqueDistractors = [...new Set(shuffle(distractorPool))].slice(0, 3);
+        const options = shuffle([correctReading, ...uniqueDistractors]);
+
+        return {
+          kanji: item.k,
+          typeText: typeText,
+          correctAnswer: correctReading,
+          options: options
+        };
+      });
+    }
+
+    function startQuiz() {
+      const count = parseInt(questionCountSelect.value, 10);
+      const mode = readingModeSelect.value;
+
+      quizQuestions = buildQuestions(count, mode);
+      currentIndex = 0;
+      userAnswers = new Array(quizQuestions.length).fill(null);
+
+      setupScreen.classList.add("hidden");
+      resultScreen.classList.add("hidden");
+      quizScreen.classList.remove("hidden");
+
+      renderQuestion();
+    }
+
+    function renderQuestion() {
+      const q = quizQuestions[currentIndex];
+      const total = quizQuestions.length;
+
+      kanjiDisplay.textContent = q.kanji;
+      readingTypeLabel.textContent = `${q.typeText} নির্বাচন করুন`;
+
+      questionCounter.textContent = `Question ${currentIndex + 1} / ${total}`;
+      const answeredCount = userAnswers.filter(ans => ans !== null).length;
+      answeredCounter.textContent = `Answered: ${answeredCount} / ${total}`;
+
+      const progressPercent = ((currentIndex + 1) / total) * 100;
+      progressBar.style.width = `${progressPercent}%`;
+
+      optionsContainer.innerHTML = "";
+      const prefixes = ["A", "B", "C", "D"];
+
+      q.options.forEach((opt, idx) => {
+        const btn = document.createElement("button");
+        btn.className = "option-btn";
+        if (userAnswers[currentIndex] === opt) {
+          btn.classList.add("selected");
+        }
+
+        btn.innerHTML = `<span class="option-prefix">${prefixes[idx]}</span><span>${opt}</span>`;
+        btn.addEventListener("click", () => selectOption(opt));
+        optionsContainer.appendChild(btn);
+      });
+
+      prevBtn.disabled = currentIndex === 0;
+      nextBtn.disabled = currentIndex === total - 1;
+    }
+
+    function selectOption(optionText) {
+      userAnswers[currentIndex] = optionText;
+      renderQuestion();
+    }
+
+    function showResults() {
+      const total = quizQuestions.length;
+      let correct = 0;
+      let wrong = 0;
+
+      const reviewList = document.getElementById("review-list");
+      reviewList.innerHTML = "";
+
+      quizQuestions.forEach((q, idx) => {
+        const userAns = userAnswers[idx];
+        const isCorrect = userAns === q.correctAnswer;
+
+        if (isCorrect) {
+          correct++;
+        } else {
+          wrong++;
+        }
+
+        const itemDiv = document.createElement("div");
+        itemDiv.className = `review-item ${isCorrect ? "is-correct" : "is-wrong"}`;
+
+        itemDiv.innerHTML = `
+          <div class="review-kanji">${q.kanji}</div>
+          <div class="review-details">
+            <div><strong>${idx + 1}. [${q.typeText}]</strong> — ${
+              isCorrect
+                ? '<span class="badge-ok">Correct ✔</span>'
+                : '<span class="badge-no">Wrong ✘</span>'
+            }</div>
+            <div>Your Answer: <strong>${userAns ? userAns : "Not Answered"}</strong></div>
+            <div>Correct Answer: <strong style="color: var(--primary);">${q.correctAnswer}</strong></div>
+          </div>
+        `;
+        reviewList.appendChild(itemDiv);
+      });
+
+      const percentage = Math.round((correct / total) * 100);
+
+      document.getElementById("percentage-display").textContent = `${percentage}%`;
+      document.getElementById("score-text").textContent = `Score: ${correct} / ${total}`;
+      document.getElementById("correct-count").textContent = `Correct: ${correct}`;
+      document.getElementById("wrong-count").textContent = `Wrong: ${wrong}`;
+
+      quizScreen.classList.add("hidden");
+      resultScreen.classList.remove("hidden");
+    }
+
+    startBtn.addEventListener("click", startQuiz);
+
+    prevBtn.addEventListener("click", () => {
+      if (currentIndex > 0) {
+        currentIndex--;
+        renderQuestion();
+      }
+    });
+
+    nextBtn.addEventListener("click", () => {
+      if (currentIndex < quizQuestions.length - 1) {
+        currentIndex++;
+        renderQuestion();
+      }
+    });
+
+    submitBtn.addEventListener("click", () => {
+      const unanswered = userAnswers.filter(a => a === null).length;
+      if (unanswered > 0) {
+        const confirmSubmit = confirm(`এখনও ${unanswered}টি প্রশ্নের উত্তর দেওয়া হয়নি। তবুও কি Submit করতে চান?`);
+        if (!confirmSubmit) return;
+      }
+      showResults();
+    });
+
+    restartBtn.addEventListener("click", () => {
+      resultScreen.classList.add("hidden");
+      setupScreen.classList.remove("hidden");
+    });
+  </script>
 </body>
 </html>
