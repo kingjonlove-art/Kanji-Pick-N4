@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>JLPT N4 Kanji Reading Quiz (235 Kanji)</title>
+  <title>JLPT N4 Kanji Reading Quiz</title>
   <style>
     :root {
       --bg: #0f172a;
@@ -262,7 +262,7 @@
       background: var(--bg);
       border-radius: 14px;
       padding: 20px;
-      margin-bottom: 20px;
+      margin-bottom: 16px;
       border: 1px solid var(--border);
     }
 
@@ -282,6 +282,32 @@
 
     .stat-correct { color: var(--success); font-weight: 700; }
     .stat-wrong { color: var(--danger); font-weight: 700; }
+
+    .export-actions {
+      display: flex;
+      gap: 10px;
+      margin-bottom: 16px;
+      flex-wrap: wrap;
+    }
+
+    .export-actions button {
+      flex: 1;
+      min-width: 140px;
+    }
+
+    .result-code-box {
+      width: 100%;
+      min-height: 120px;
+      background: var(--bg);
+      color: #e2e8f0;
+      border: 1px solid var(--border);
+      border-radius: 10px;
+      padding: 12px;
+      font-family: monospace;
+      font-size: 0.82rem;
+      margin-bottom: 18px;
+      resize: vertical;
+    }
 
     .review-list {
       display: flex;
@@ -326,12 +352,12 @@
   <div class="container">
     <header>
       <h1>漢字 (Kanji) – N4 Reading Test</h1>
-      <p>音読み (Katakana) &amp; 訓読み (Hiragana) Practice (Total: 235)</p>
+      <p>音読み (Katakana) &amp; 訓読み (Hiragana) Practice</p>
     </header>
 
     <div id="setup-screen" class="setup-box">
       <div class="control-group">
-        <label for="question-count">প্রশ্নের সংখ্যা নির্বাচন করুন (Total 235 N4 Kanji):</label>
+        <label for="question-count">প্রশ্নের সংখ্যা নির্বাচন করুন:</label>
         <select id="question-count">
           <option value="10">10 Questions</option>
           <option value="20" selected>20 Questions</option>
@@ -388,6 +414,13 @@
         </div>
       </div>
 
+      <div class="export-actions">
+        <button class="btn btn-secondary" id="copy-result-btn">Copy Result Code</button>
+        <button class="btn" id="download-result-btn">Download Result (.txt)</button>
+      </div>
+
+      <textarea id="result-code-output" class="result-code-box" readonly></textarea>
+
       <div class="review-list" id="review-list"></div>
 
       <button class="btn" id="restart-btn" style="width: 100%;">Restart Test</button>
@@ -396,7 +429,6 @@
 
   <script>
     const KANJI_DATA = [
-      // Main Grid Rows 1-20 (200 Kanji)
       { k: "住", on: "ジュウ", kun: "す.む" },
       { k: "所", on: "ショ", kun: "ところ" },
       { k: "京", on: "キョウ・ケイ", kun: "" },
@@ -617,7 +649,6 @@
       { k: "説", on: "セツ・ゼイ", kun: "と.く" },
       { k: "思", on: "シ", kun: "おも.う" },
 
-      // Bottom Grid (35 Kanji)
       { k: "力", on: "リョク・リキ", kun: "ちから" },
       { k: "全", on: "ゼン", kun: "まった.く・すべ.て" },
       { k: "若", on: "ジャク・ニャク", kun: "わか.い・も.しくは" },
@@ -658,6 +689,7 @@
     let quizQuestions = [];
     let currentIndex = 0;
     let userAnswers = [];
+    let latestResultPayload = "";
 
     const setupScreen = document.getElementById("setup-screen");
     const quizScreen = document.getElementById("quiz-screen");
@@ -678,6 +710,9 @@
     const nextBtn = document.getElementById("next-btn");
     const submitBtn = document.getElementById("submit-btn");
     const restartBtn = document.getElementById("restart-btn");
+    const copyResultBtn = document.getElementById("copy-result-btn");
+    const downloadResultBtn = document.getElementById("download-result-btn");
+    const resultCodeOutput = document.getElementById("result-code-output");
 
     function shuffle(array) {
       const arr = [...array];
@@ -739,8 +774,10 @@
       quizQuestions = buildQuestions(count, mode);
       currentIndex = 0;
       userAnswers = new Array(quizQuestions.length).fill(null);
+      latestResultPayload = "";
 
       document.getElementById("review-list").innerHTML = "";
+      resultCodeOutput.value = "";
       setupScreen.classList.add("hidden");
       resultScreen.classList.add("hidden");
       quizScreen.classList.remove("hidden");
@@ -786,10 +823,24 @@
       renderQuestion();
     }
 
+    function generateResultCode(scoreData) {
+      const payloadObj = {
+        exam: "JLPT N4 Kanji Reading Test",
+        submittedAt: new Date().toISOString(),
+        totalQuestions: scoreData.total,
+        correct: scoreData.correct,
+        wrong: scoreData.wrong,
+        percentage: scoreData.percentage,
+        answers: scoreData.details
+      };
+      return JSON.stringify(payloadObj, null, 2);
+    }
+
     function showResults() {
       const total = quizQuestions.length;
       let correct = 0;
       let wrong = 0;
+      const details = [];
 
       const reviewList = document.getElementById("review-list");
       reviewList.innerHTML = "";
@@ -803,6 +854,15 @@
         } else {
           wrong++;
         }
+
+        details.push({
+          no: idx + 1,
+          kanji: q.kanji,
+          type: q.typeText,
+          yourAnswer: userAns || "Not Answered",
+          correctAnswer: q.correctAnswer,
+          status: isCorrect ? "Correct" : "Wrong"
+        });
 
         const itemDiv = document.createElement("div");
         itemDiv.className = `review-item ${isCorrect ? "is-correct" : "is-wrong"}`;
@@ -829,9 +889,41 @@
       document.getElementById("correct-count").textContent = `Correct: ${correct}`;
       document.getElementById("wrong-count").textContent = `Wrong: ${wrong}`;
 
+      latestResultPayload = generateResultCode({
+        total,
+        correct,
+        wrong,
+        percentage,
+        details
+      });
+      resultCodeOutput.value = latestResultPayload;
+
       quizScreen.classList.add("hidden");
       resultScreen.classList.remove("hidden");
     }
+
+    copyResultBtn.addEventListener("click", () => {
+      if (!latestResultPayload) return;
+      navigator.clipboard.writeText(latestResultPayload).then(() => {
+        copyResultBtn.textContent = "Copied ✔";
+        setTimeout(() => {
+          copyResultBtn.textContent = "Copy Result Code";
+        }, 1800);
+      });
+    });
+
+    downloadResultBtn.addEventListener("click", () => {
+      if (!latestResultPayload) return;
+      const blob = new Blob([latestResultPayload], { type: "application/json;charset=utf-8" });
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement("a");
+      a.href = url;
+      a.download = `n4-kanji-result-${Date.now()}.json`;
+      document.body.appendChild(a);
+      a.click();
+      document.body.removeChild(a);
+      URL.revokeObjectURL(url);
+    });
 
     startBtn.addEventListener("click", startQuiz);
 
