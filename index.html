@@ -138,7 +138,6 @@
       cursor: not-allowed;
     }
 
-    /* Quiz Area */
     .hidden {
       display: none !important;
     }
@@ -258,7 +257,6 @@
       min-width: 110px;
     }
 
-    /* Result Screen */
     .result-summary {
       text-align: center;
       background: var(--bg);
@@ -331,7 +329,6 @@
       <p>音読み (Katakana) &amp; 訓読み (Hiragana) Practice</p>
     </header>
 
-    <!-- Setup Screen -->
     <div id="setup-screen" class="setup-box">
       <div class="control-group">
         <label for="question-count">প্রশ্নের সংখ্যা নির্বাচন করুন (Total 225 N4 Kanji):</label>
@@ -357,7 +354,6 @@
       <button class="btn" id="start-btn">Start Test</button>
     </div>
 
-    <!-- Quiz Screen -->
     <div id="quiz-screen" class="hidden">
       <div class="progress-bar-wrap">
         <div class="progress-bar" id="progress-bar"></div>
@@ -382,7 +378,6 @@
       </div>
     </div>
 
-    <!-- Result Screen -->
     <div id="result-screen" class="hidden">
       <div class="result-summary">
         <div class="score-big" id="percentage-display">0%</div>
@@ -398,10 +393,9 @@
       <button class="btn" id="restart-btn" style="width: 100%;">Restart Test</button>
     </div>
   </div>
-<script>
-    // ছবির N4 তালিকার হুবহু ২২৫টি Kanji এবং তাদের প্রকৃত On-yomi (Katakana) ও Kun-yomi (Hiragana)
+
+  <script>
     const KANJI_DATA = [
-      // Row 1
       { k: "住", on: "ジュウ", kun: "す.む" },
       { k: "所", on: "ショ", kun: "ところ" },
       { k: "京", on: "キョウ・ケイ", kun: "" },
@@ -412,7 +406,6 @@
       { k: "区", on: "ク", kun: "" },
       { k: "町", on: "チョウ", kun: "まち" },
       { k: "村", on: "ソン", kun: "むら" },
-      // Row 2
       { k: "明", on: "メイ・ミョウ", kun: "あか.るい" },
       { k: "暗", on: "アン", kun: "くら.い" },
       { k: "遠", on: "エン", kun: "とお.い" },
@@ -423,7 +416,6 @@
       { k: "軽", on: "ケイ", kun: "かる.い" },
       { k: "太", on: "タイ・タ", kun: "ふと.い" },
       { k: "細", on: "サイ", kun: "ほそ.い・こま.かい" },
-      // Row 3
       { k: "特", on: "トク", kun: "" },
       { k: "別", on: "ベツ", kun: "わか.れる" },
       { k: "有", on: "ユウ・ウ", kun: "あ.る" },
@@ -434,7 +426,6 @@
       { k: "元", on: "ゲン・ガン", kun: "もと" },
       { k: "好", on: "コウ", kun: "す.く・この.む" },
       { k: "急", on: "キュウ", kun: "いそ.ぐ" },
-      // Row 4
       { k: "低", on: "テイ", kun: "ひく.い" },
       { k: "広", on: "コウ", kun: "ひろ.い" },
       { k: "短", on: "タン", kun: "みじか.い" },
@@ -445,7 +436,6 @@
       { k: "赤", on: "セキ・シャク", kun: "あか・あか.い" },
       { k: "青", on: "セイ・ショウ", kun: "あお・あお.い" },
       { k: "黒", on: "コク", kun: "くろ・くろ.い" },
-      // Row 5
       { k: "映", on: "エイ", kun: "うつ.る・うつ.す" },
       { k: "画", on: "ガ・カク", kun: "" },
       { k: "音", on: "オン・イン", kun: "おと・ね" },
@@ -456,7 +446,6 @@
       { k: "旅", on: "リョ", kun: "たび" },
       { k: "世", on: "セイ・セ", kun: "よ" },
       { k: "界", on: "カイ", kun: "" },
-      // Row 6
       { k: "仕", on: "シ・ジ", kun: "つか.える" },
       { k: "事", on: "ジ・ズ", kun: "こと" },
       { k: "銀", on: "ギン", kun: "" },
@@ -467,7 +456,6 @@
       { k: "屋", on: "オク", kun: "や" },
       { k: "産", on: "サン", kun: "う.む・う.まれる" },
       { k: "業", on: "ギョウ・ゴウ", kun: "わざ" },
-      // Row 7
       { k: "林", on: "リン", kun: "はやし" },
       { k: "森", on: "シン", kun: "もり" },
       { k: "地", on: "チ・ジ", kun: "" },
@@ -478,7 +466,6 @@
       { k: "光", on: "コウ", kun: "ひか.る・ひかり" },
       { k: "台", on: "ダイ・タイ", kun: "" },
       { k: "風", on: "フウ・フ", kun: "かぜ" },
-      // Row 8
       { k: "季", on: "キ", kun: "" },
       { k: "節", on: "セツ・セチ", kun: "ふし" },
       { k: "春", on: "シュン", kun: "はる" },
@@ -489,7 +476,6 @@
       { k: "寒", on: "カン", kun: "さむ.い" },
       { k: "暖", on: "ダン", kun: "あたた.かい" },
       { k: "涼", on: "リョウ", kun: "すず.しい" },
-      // Row 9
       { k: "頭", on: "トウ・ズ・ト", kun: "あたま・かしら" },
       { k: "体", on: "タイ・テイ", kun: "からだ" },
       { k: "顔", on: "ガン", kun: "かお" },
@@ -500,7 +486,6 @@
       { k: "薬", on: "ヤク", kun: "くすり" },
       { k: "科", on: "カ", kun: "" },
       { k: "内", on: "ナイ・ダイ", kun: "うち" },
-      // Row 10
       { k: "曜", on: "ヨウ", kun: "" },
       { k: "昼", on: "チュウ", kun: "ひる" },
       { k: "夜", on: "ヤ", kun: "よ・よる" },
@@ -511,7 +496,6 @@
       { k: "朝", on: "チョウ", kun: "あさ" },
       { k: "以", on: "イ", kun: "" },
       { k: "度", on: "ド・ト・タク", kun: "たび" },
-      // Row 11
       { k: "止", on: "シ", kun: "と.まる・と.める" },
       { k: "歩", on: "ホ・ブ・フ", kun: "ある.く・あゆ.む" },
       { k: "走", on: "ソウ", kun: "はし.る" },
@@ -522,7 +506,6 @@
       { k: "貸", on: "タイ", kun: "か.す" },
       { k: "始", on: "シ", kun: "はじ.める・はじ.まる" },
       { k: "終", on: "シュウ", kun: "お.わる・お.える" },
-      // Row 12
       { k: "家", on: "カ・ケ", kun: "いえ・や" },
       { k: "族", on: "ゾク", kun: "" },
       { k: "私", on: "シ", kun: "わたくし・わたし" },
@@ -533,7 +516,6 @@
       { k: "弟", on: "テイ・ダイ・デ", kun: "おとうと" },
       { k: "姉", on: "シ", kun: "あね" },
       { k: "妹", on: "マイ", kun: "いもうと" },
-      // Row 13
       { k: "活", on: "カツ", kun: "" },
       { k: "回", on: "カイ・エ", kun: "まわ.る・まわ.す" },
       { k: "主", on: "シュ・ス", kun: "ぬし・おも" },
@@ -544,7 +526,6 @@
       { k: "服", on: "フク", kun: "" },
       { k: "品", on: "ヒン", kun: "しな" },
       { k: "同", on: "ドウ", kun: "おな.じ" },
-      // Row 14
       { k: "米", on: "ベイ・マイ", kun: "こめ" },
       { k: "料", on: "リョウ", kun: "" },
       { k: "理", on: "リ", kun: "" },
@@ -555,7 +536,6 @@
       { k: "茶", on: "チャ・サ", kun: "" },
       { k: "飯", on: "ハン", kun: "めし" },
       { k: "味", on: "ミ", kun: "あじ・あじ.わう" },
-      // Row 15
       { k: "代", on: "ダイ・タイ", kun: "か.わる・よ・しろ" },
       { k: "使", on: "シ", kun: "つか.う" },
       { k: "作", on: "サク・サ", kun: "つく.る" },
@@ -566,7 +546,6 @@
       { k: "返", on: "ヘン", kun: "かえ.す・かえ.る" },
       { k: "洗", on: "セン", kun: "あら.う" },
       { k: "注", on: "チュウ", kun: "そそ.ぐ" },
-      // Row 16
       { k: "場", on: "ジョウ", kun: "ば" },
       { k: "建", on: "ケン・コン", kun: "た.てる・た.つ" },
       { k: "物", on: "ブツ・モツ", kun: "もの" },
@@ -577,7 +556,6 @@
       { k: "工", on: "コウ・ク", kun: "" },
       { k: "図", on: "ズ・ト", kun: "はか.る" },
       { k: "号", on: "ゴウ", kun: "" },
-      // Row 17
       { k: "交", on: "コウ", kun: "まじ.わる・か.う" },
       { k: "通", on: "ツウ・ツ", kun: "とお.る・かよ.う" },
       { k: "動", on: "ドウ", kun: "うご.く・うご.かす" },
@@ -588,7 +566,6 @@
       { k: "帰", on: "キ", kun: "かえ.る・かえ.す" },
       { k: "発", on: "ハツ・ホツ", kun: "" },
       { k: "着", on: "チャク・ジャク", kun: "き.る・つ.く" },
-      // Row 18
       { k: "漢", on: "カン", kun: "" },
       { k: "字", on: "ジ", kun: "あざ" },
       { k: "文", on: "ブン・モン", kun: "ふみ" },
@@ -599,7 +576,6 @@
       { k: "考", on: "コウ", kun: "かんが.える" },
       { k: "習", on: "シュウ", kun: "なら.う" },
       { k: "究", on: "キュウ", kun: "きわ.める" },
-      // Row 19
       { k: "問", on: "モン", kun: "と.う・と.い" },
       { k: "題", on: "ダイ", kun: "" },
       { k: "試", on: "シ", kun: "こころ.みる・ため.す" },
@@ -610,7 +586,6 @@
       { k: "用", on: "ヨウ", kun: "もち.いる" },
       { k: "紙", on: "シ", kun: "かみ" },
       { k: "意", on: "イ", kun: "" },
-      // Row 20
       { k: "引", on: "イン", kun: "ひ.く・ひ.ける" },
       { k: "開", on: "カイ", kun: "ひら.く・あ.く・あ.ける" },
       { k: "閉", on: "ヘイ", kun: "と.じる・し.める・し.まる" },
@@ -621,7 +596,6 @@
       { k: "売", on: "バイ", kun: "う.る・う.れる" },
       { k: "説", on: "セツ・ゼイ", kun: "と.く" },
       { k: "思", on: "シ", kun: "おも.う" },
-      // Bottom Table (35 Kanji)
       { k: "力", on: "リョク・リキ", kun: "ちから" },
       { k: "全", on: "ゼン", kun: "まった.く・すべ.て" },
       { k: "若", on: "ジャク・ニャク", kun: "わか.い・も.しくは" },
@@ -658,7 +632,8 @@
       { k: "練", on: "レン", kun: "ね.る" },
       { k: "線", on: "セン", kun: "" }
     ];
- let quizQuestions = [];
+
+    let quizQuestions = [];
     let currentIndex = 0;
     let userAnswers = [];
 
@@ -719,7 +694,6 @@
         const correctReading = targetType === "on" ? item.on : item.kun;
         const typeText = targetType === "on" ? "音読み (Katakana)" : "訓読み (Hiragana)";
 
-        // একই ধরনের Reading থেকে ৩টি ভুল অপশন তৈরি করা (Katakana না থাকলে জোর করে বানানো হবে না)
         const distractorPool = KANJI_DATA
           .filter(other => other.k !== item.k && other[targetType] && other[targetType] !== correctReading)
           .map(other => other[targetType]);
@@ -744,6 +718,7 @@
       currentIndex = 0;
       userAnswers = new Array(quizQuestions.length).fill(null);
 
+      document.getElementById("review-list").innerHTML = "";
       setupScreen.classList.add("hidden");
       resultScreen.classList.add("hidden");
       quizScreen.classList.remove("hidden");
@@ -825,7 +800,7 @@
         reviewList.appendChild(itemDiv);
       });
 
-      const percentage = Math.round((correct / total) * 100);
+      const percentage = total > 0 ? Math.round((correct / total) * 100) : 0;
 
       document.getElementById("percentage-display").textContent = `${percentage}%`;
       document.getElementById("score-text").textContent = `Score: ${correct} / ${total}`;
