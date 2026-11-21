@@ -1,0 +1,159 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>KANJI PICK - N4 MOCK TEST</title>
+<style>
+*{box-sizing:border-box}
+body{margin:0;padding:16px;background:#071426;color:#fff;font-family:Arial,sans-serif}
+.container{max-width:650px;margin:auto;background:#10243e;padding:20px;border-radius:18px;border:1px solid #00d9ff}
+h1{text-align:center;color:#00eaff}
+.subtitle{text-align:center;color:#b8d8ef}
+select,button{width:100%;padding:13px;margin:8px 0;border:0;border-radius:9px;font-size:16px}
+select{background:#eafaff;color:#10243e}
+button{background:#00c9ed;color:#001522;font-weight:bold;cursor:pointer}
+button:disabled{opacity:.4;cursor:not-allowed}
+.question{background:#193553;padding:18px;border-radius:12px;margin:18px 0}
+.kanji{font-size:55px;text-align:center;color:#00eaff;margin:12px}
+.option{display:block;background:#274664;padding:13px;margin:9px 0;border-radius:8px;cursor:pointer}
+.option input{margin-right:10px}
+.progress{height:9px;background:#34506b;border-radius:20px;overflow:hidden}
+#bar{height:100%;width:0;background:#00eaff}
+.small{text-align:center;color:#bdd5e8}
+#result{display:none;background:#193553;padding:18px;border-radius:12px;margin-top:15px}
+.correct{color:#52ff9b}
+.wrong{color:#ff8585}
+</style>
+</head>
+<body>
+<div class="container">
+<h1>KANJI PICK</h1>
+<p class="subtitle">N4 MOCK TEST</p>
+
+<select id="testSelect" onchange="startTest()">
+<option value="0">Mock Test 1</option>
+</select>
+
+<p class="small" id="counter">Question 1 / 20</p>
+<div class="progress"><div id="bar"></div></div>
+
+<div id="quiz">
+<div class="question">
+<p>Choose the correct meaning:</p>
+<div class="kanji" id="kanji"></div>
+<div id="options"></div>
+</div>
+<button id="prev" onclick="move(-1)">Previous</button>
+<button id="next" onclick="move(1)">Next</button>
+<button id="submit" onclick="submitTest()">Submit Test</button>
+</div>
+
+<div id="result">
+<h2>Test Result</h2>
+<h1 id="score"></h1>
+<p id="details"></p>
+<div id="review"></div>
+<button onclick="startTest()">Try Again</button>
+</div>
+</div>
+
+<script>
+const kanjiData = [
+{ k:"住", r:"じゅう", m:"বাস করা", o:["বাস করা","খাওয়া","পড়া","লেখা"] },
+{ k:"所", r:"しょ", m:"স্থান", o:["সময়","স্থান","মানুষ","বই"] },
+{ k:"京", r:"きょう", m:"রাজধানী", o:["নদী","রাজধানী","পাহাড়","স্কুল"] },
+{ k:"都", r:"と", m:"মহানগর", o:["গ্রাম","মহানগর","রাস্তা","বাড়ি"] },
+{ k:"府", r:"ふ", m:"প্রিফেকচার", o:["প্রিফেকচার","দেশ","শহর","দোকান"] },
+{ k:"県", r:"けん", m:"প্রিফেকচার", o:["স্কুল","প্রিফেকচার","বই","গাড়ি"] },
+{ k:"市", r:"し", m:"শহর", o:["শহর","গ্রাম","পরিবার","নদী"] },
+{ k:"区", r:"く", m:"এলাকা", o:["সমুদ্র","এলাকা","আকাশ","বন"] },
+{ k:"町", r:"まち", m:"শহর/পাড়া", o:["পাহাড়","শহর/পাড়া","দেশ","বৃষ্টি"] },
+{ k:"村", r:"むら", m:"গ্রাম", o:["গ্রাম","রাস্তা","দোকান","স্কুল"] },
+{ k:"明", r:"あかるい", m:"উজ্জ্বল", o:["অন্ধকার","উজ্জ্বল","ঠান্ডা","গরম"] },
+{ k:"暗", r:"くらい", m:"অন্ধকার", o:["উজ্জ্বল","দ্রুত","অন্ধকার","নরম"] },
+{ k:"遠", r:"とおい", m:"দূর", o:["কাছের","দূর","ছোট","বড়"] },
+{ k:"近", r:"ちかい", m:"কাছের", o:["দূর","কাছের","ভারী","হালকা"] },
+{ k:"強", r:"つよい", m:"শক্তিশালী", o:["দুর্বল","শক্তিশালী","ধীর","নরম"] },
+{ k:"弱", r:"よわい", m:"দুর্বল", o:["শক্তিশালী","দুর্বল","লম্বা","মোটা"] },
+{ k:"重", r:"おもい", m:"ভারী", o:["হালকা","ভারী","পাতলা","ছোট"] },
+{ k:"軽", r:"かるい", m:"হালকা", o:["ভারী","হালকা","দূর","কাছের"] },
+{ k:"太", r:"ふとい", m:"মোটা", o:["চিকন","মোটা","লম্বা","ছোট"] },
+{ k:"細", r:"ほそい", m:"সরু/চিকন", o:["মোটা","সরু/চিকন","ভারী","শক্তিশালী"] }
+];
+
+let current=0;
+let answers={};
+let submitted=false;
+
+function startTest(){
+ current=0;
+ answers={};
+ submitted=false;
+ document.getElementById("quiz").style.display="block";
+ document.getElementById("result").style.display="none";
+ render();
+}
+
+function render(){
+ const q=kanjiData[current];
+ document.getElementById("kanji").textContent=q.k;
+ document.getElementById("counter").textContent=
+ "Question "+(current+1)+" / "+kanjiData.length;
+ document.getElementById("bar").style.width=
+ ((current+1)/kanjiData.length*100)+"%";
+
+ document.getElementById("options").innerHTML="";
+ q.o.forEach((option,i)=>{
+  const label=document.createElement("label");
+  label.className="option";
+  label.innerHTML=`<input type="radio" name="answer" value="${i}" ${answers[current]===i?"checked":""}> ${i+1}. ${option}`;
+  label.querySelector("input").addEventListener("change",()=>{
+   answers[current]=i;
+   updateSubmit();
+  });
+  document.getElementById("options").appendChild(label);
+ });
+
+ document.getElementById("prev").disabled=current===0;
+ document.getElementById("next").disabled=current===kanjiData.length-1;
+ updateSubmit();
+}
+
+function updateSubmit(){
+ document.getElementById("submit").disabled=
+ Object.keys(answers).length!==kanjiData.length;
+}
+
+function move(direction){
+ current+=direction;
+ render();
+}
+
+function submitTest(){
+ if(Object.keys(answers).length!==kanjiData.length)return;
+ submitted=true;
+ let score=0;
+ let review="";
+ kanjiData.forEach((q,i)=>{
+  const correct=q.o.indexOf(q.m);
+  const right=answers[i]===correct;
+  if(right)score++;
+  review+=`<p class="${right?"correct":"wrong"}">
+  ${i+1}. ${q.k} — ${right?"Correct":"Incorrect"}<br>
+  Your answer: ${q.o[answers[i]]}<br>
+  Correct answer: ${q.m}
+  </p>`;
+ });
+ const percent=Math.round(score/kanjiData.length*100);
+ document.getElementById("quiz").style.display="none";
+ document.getElementById("result").style.display="block";
+ document.getElementById("score").textContent=score+" / "+kanjiData.length;
+ document.getElementById("details").textContent="Your score: "+percent+"%";
+ document.getElementById("review").innerHTML=review;
+}
+
+startTest();
+</script>
+</body>
+</html>
